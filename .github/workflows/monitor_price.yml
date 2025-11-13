@@ -1,40 +1,38 @@
 name: Monitor de preço do bitcoin
 
-#gatilho , inicio do script
 on:
-    schedule:
-        - cron: '*/3600 * * *'
-    workflow_dispatch:
-    
-    permissions:
-        issues: write
-        contents: read
-        
-#o que fazer quando o agendamento for ativado
+  schedule:
+    - cron: '0 * * * *'  # Executa a cada hora (60 minutos)
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
 jobs:
-    checkSites:
-        runs-on: ubuntu-latest
+  checkSites:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Instalar JQ e BC
+        run: sudo apt-get update && sudo apt-get install -y jq bc
+            
+      - name: Dar permissão
+        run: chmod +x ./check_site.sh  
         
-        steps:
-            - name: Checkout do código
-              uses: actions/checkout@v3
-              with:
-                token: ${{ secrets.GITHUB_TOKEN }}
-             
-            - name: Instalar JQ e BC
-              run: sudo apt-get update && sudo apt-get install -y jq bc
-                          
-            - name: Da permissao
-              run: chmod +x ./check_site.sh  
-              
-            - name: Executa o script de verificação do site
-              run: ./check_site.sh              
-              
-            - name: Criar issue de alerta no Github
-              if: failure()
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
-              run:
-                gh issue create \
-                    --title "ALERTA: Bitcoin caiu!!!" \
-                    --body "O script de monitoramento detectou uma queda de preço!" \
+      - name: Executa o script de verificação do site
+        run: ./check_site.sh
+
+      - name: Criar issue de alerta no Github
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "ALERTA: Bitcoin caiu!!!" \
+            --body "O script de monitoramento detectou uma queda de preço!"
