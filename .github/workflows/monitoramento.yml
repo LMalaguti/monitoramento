@@ -3,7 +3,7 @@ name: Monitor de site
 #gatilho , inicio do script
 on:
     schedule:
-        - cron: '*/5 * * *'
+        - cron: "* 3600 * * *"
     workflow_dispatch:
 
 #o que fazer quando o agendamento for ativado
@@ -16,4 +16,4 @@ jobs:
               uses: actions/checkout@v3
               
             - name: Executa o script de verificação do site
-              run: ./check_site.sh              
+              run: ./check_site.sh             
